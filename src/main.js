@@ -7,9 +7,22 @@ import { generateFilePath } from '@nextcloud/router'
 
 import Vue from 'vue'
 import App from './App'
+import store from './store/store'
+
+
+// CSP config for webpack dynamic chunk loading
+// eslint-disable-next-line
+__webpack_nonce__ = btoa(getRequestToken())
+
+Vue.prototype.$window = window
+Vue.prototype.OC = OC
+Vue.prototype.OCA = OCA
+Vue.prototype.OCP = OCP
 
 // eslint-disable-next-line
 __webpack_public_path__ = generateFilePath(appName, '', 'js/')
+
+
 
 Vue.mixin({ methods: { t, n } })
 

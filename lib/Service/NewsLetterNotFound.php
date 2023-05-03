@@ -5,5 +5,5 @@ declare(strict_types=1);
 
 namespace OCA\NewsLetterBuilder\Service;
 
-class NoteNotFound extends \Exception {
+class NewsLetterNotFound extends \Exception {
 }

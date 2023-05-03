@@ -6,19 +6,19 @@ declare(strict_types=1);
 namespace OCA\NewsLetterBuilder\Controller;
 
 use OCA\NewsLetterBuilder\AppInfo\Application;
-use OCA\NewsLetterBuilder\Service\NoteService;
-use OCP\AppFramework\Controller;
+use OCA\NewsLetterBuilder\Service\NewsLetterService;
+use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 
-class NoteController extends Controller {
-	private NoteService $service;
+class NewsLetterApiController extends ApiController {
+	private NewsLetterService $service;
 	private ?string $userId;
 
 	use Errors;
 
 	public function __construct(IRequest $request,
-								NoteService $service,
+								NewsLetterService $service,
 								?string $userId) {
 		parent::__construct(Application::APP_ID, $request);
 		$this->service = $service;
@@ -26,6 +26,8 @@ class NoteController extends Controller {
 	}
 
 	/**
+	 * @CORS
+	 * @NoCSRFRequired
 	 * @NoAdminRequired
 	 */
 	public function index(): DataResponse {
@@ -33,6 +35,8 @@ class NoteController extends Controller {
 	}
 
 	/**
+	 * @CORS
+	 * @NoCSRFRequired
 	 * @NoAdminRequired
 	 */
 	public function show(int $id): DataResponse {
@@ -42,6 +46,8 @@ class NoteController extends Controller {
 	}
 
 	/**
+	 * @CORS
+	 * @NoCSRFRequired
 	 * @NoAdminRequired
 	 */
 	public function create(string $title, string $content): DataResponse {
@@ -50,6 +56,8 @@ class NoteController extends Controller {
 	}
 
 	/**
+	 * @CORS
+	 * @NoCSRFRequired
 	 * @NoAdminRequired
 	 */
 	public function update(int $id, string $title,
@@ -60,6 +68,8 @@ class NoteController extends Controller {
 	}
 
 	/**
+	 * @CORS
+	 * @NoCSRFRequired
 	 * @NoAdminRequired
 	 */
 	public function destroy(int $id): DataResponse {

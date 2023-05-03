@@ -10,18 +10,18 @@ use Exception;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 
-use OCA\NewsLetterBuilder\Db\Note;
-use OCA\NewsLetterBuilder\Db\NoteMapper;
+use OCA\NewsLetterBuilder\Db\NewsLetter;
+use OCA\NewsLetterBuilder\Db\NewsLetterMapper;
 
-class NoteService {
-	private NoteMapper $mapper;
+class NewsLetterService {
+	private NewsLetterMapper $mapper;
 
-	public function __construct(NoteMapper $mapper) {
+	public function __construct(NewsLetterMapper $mapper) {
 		$this->mapper = $mapper;
 	}
 
 	/**
-	 * @return list<Note>
+	 * @return list<NewsLetter>
 	 */
 	public function findAll(string $userId): array {
 		return $this->mapper->findAll($userId);
@@ -33,13 +33,13 @@ class NoteService {
 	private function handleException(Exception $e) {
 		if ($e instanceof DoesNotExistException ||
 			$e instanceof MultipleObjectsReturnedException) {
-			throw new NoteNotFound($e->getMessage());
+			throw new NewsLetterNotFound($e->getMessage());
 		} else {
 			throw $e;
 		}
 	}
 
-	public function find(int $id, string $userId): Note {
+	public function find(int $id, string $userId): NewsLetter {
 		try {
 			return $this->mapper->find($id, $userId);
 
@@ -52,15 +52,15 @@ class NoteService {
 		}
 	}
 
-	public function create(string $title, string $content, string $userId): Note {
-		$note = new Note();
+	public function create(string $title, string $content, string $userId): NewsLetter {
+		$note = new NewsLetter();
 		$note->setTitle($title);
 		$note->setContent($content);
 		$note->setUserId($userId);
 		return $this->mapper->insert($note);
 	}
 
-	public function update(int $id, string $title, string $content, string $userId): Note {
+	public function update(int $id, string $title, string $content, string $userId): NewsLetter {
 		try {
 			$note = $this->mapper->find($id, $userId);
 			$note->setTitle($title);
@@ -71,7 +71,7 @@ class NoteService {
 		}
 	}
 
-	public function delete(int $id, string $userId): Note {
+	public function delete(int $id, string $userId): NewsLetter {
 		try {
 			$note = $this->mapper->find($id, $userId);
 			$this->mapper->delete($note);

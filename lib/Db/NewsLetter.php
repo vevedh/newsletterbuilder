@@ -18,7 +18,7 @@ use OCP\AppFramework\Db\Entity;
  * @method getUserId(): string
  * @method setUserId(string $userId): void
  */
-class Note extends Entity implements JsonSerializable {
+class NewsLetter extends Entity implements JsonSerializable {
 	protected string $title = '';
 	protected string $content = '';
 	protected string $userId = '';
