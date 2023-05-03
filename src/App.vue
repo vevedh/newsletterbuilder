@@ -1,67 +1,71 @@
 <template>
-    <!--
+	<!--
     SPDX-FileCopyrightText: Hervé de CHAVIGNY <vevedh@gmail.com>
     SPDX-License-Identifier: AGPL-3.0-or-later
     -->
 	<div id="content" class="app-newsletterbuilder">
-		<AppNavigation>
-			<AppNavigationNew v-if="!loading"
-				:text="t('newsletterbuilder', 'New note')"
+		<NcAppNavigation>
+			<NcAppNavigationNew v-if="!loading"
+				:text="t('newsletterbuilder', 'Nouvelle Newsletter')"
 				:disabled="false"
 				button-id="new-newsletterbuilder-button"
 				button-class="icon-add"
-				@click="newNote" />
+				@click="newNewsLetter" />
 			<ul>
-				<AppNavigationItem v-for="note in notes"
-					:key="note.id"
-					:title="note.title ? note.title : t('newsletterbuilder', 'New note')"
-					:class="{active: currentNoteId === note.id}"
-					@click="openNote(note)">
+				<NcAppNavigationItem v-for="newsletter in newsletters"
+					:key="newsletter.id"
+					:title="newsletter.title ? newsletter.title : t('newsletterbuilder', 'Nouvelle NewsLetter')"
+					:class="{active: currentNewsLetterId === newsletter.id}"
+					@click="openNewsLetter(newsletter)">
 					<template slot="actions">
-						<ActionButton v-if="note.id === -1"
+						<ActionButton v-if="newsletter.id === -1"
 							icon="icon-close"
-							@click="cancelNewNote(note)">
+							@click="cancelNewNewsLetter(newsletter)">
 							{{
-							t('newsletterbuilder', 'Cancel note creation') }}
+								t('newsletterbuilder', 'Cancel newsletter creation') }}
 						</ActionButton>
 						<ActionButton v-else
 							icon="icon-delete"
-							@click="deleteNote(note)">
+							@click="deleteNewsLetter(newsletter)">
 							{{
-							 t('newsletterbuilder', 'Delete note') }}
+								t('newsletterbuilder', 'Delete newsletter') }}
 						</ActionButton>
 					</template>
-				</AppNavigationItem>
+				</NcAppNavigationItem>
 			</ul>
-		</AppNavigation>
-		<AppContent>
-			<div v-if="currentNote">
+		</NcAppNavigation>
+		<NcAppContent>
+			<div v-if="currentNewsLetter">
 				<input ref="title"
-					v-model="currentNote.title"
+					v-model="currentNewsLetter.title"
 					type="text"
 					:disabled="updating">
-				<textarea ref="content" v-model="currentNote.content" :disabled="updating" />
+				<textarea ref="content" v-model="currentNewsLetter.content" :disabled="updating" />
 				<input type="button"
 					class="primary"
 					:value="t('newsletterbuilder', 'Save')"
 					:disabled="updating || !savePossible"
-					@click="saveNote">
+					@click="saveNewsLetter">
 			</div>
 			<div v-else id="emptycontent">
 				<div class="icon-file" />
-				<h2>{{
-				 t('newsletterbuilder', 'Create a note to get started') }}</h2>
+				<h2>
+					{{
+						t('newsletterbuilder', 'Create a newsletter to get started') }}
+				</h2>
 			</div>
-		</AppContent>
+		</NcAppContent>
 	</div>
 </template>
 
 <script>
-import ActionButton from '@nextcloud/vue/dist/Components/ActionButton'
-import AppContent from '@nextcloud/vue/dist/Components/AppContent'
-import AppNavigation from '@nextcloud/vue/dist/Components/AppNavigation'
-import AppNavigationItem from '@nextcloud/vue/dist/Components/AppNavigationItem'
-import AppNavigationNew from '@nextcloud/vue/dist/Components/AppNavigationNew'
+import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton'
+import NcAppContent from '@nextcloud/vue/dist/Components/NcAppContent'
+import NcAppNavigation from '@nextcloud/vue/dist/Components/NcAppNavigation'
+import NcAppNavigationItem from '@nextcloud/vue/dist/Components/NcAppNavigationItem'
+import NcAppNavigationNew from '@nextcloud/vue/dist/Components/NcAppNavigationNew'
+
+import { mapState, mapGetters, mapActions } from 'vuex'
 
 import '@nextcloud/dialogs/styles/toast.scss'
 import { generateUrl } from '@nextcloud/router'
@@ -79,80 +83,84 @@ export default {
 	},
 	data() {
 		return {
-			notes: [],
-			currentNoteId: null,
+			// newsletters: [],
+			currentNewsLetterId: null,
 			updating: false,
 			loading: true,
 		}
 	},
 	computed: {
+		...mapState(['newsletters']),
+		...mapGetters(['getNewsLetter', 'getNewsLetters']),
 		/**
-		 * Return the currently selected note object
-		 * @returns {Object|null}
+		 * Return the currently selected newsletter object
+		 *
+		 * @return {object | null}
 		 */
-		currentNote() {
-			if (this.currentNoteId === null) {
+		currentNewsLetter() {
+			if (this.currentNewsLetterId === null) {
 				return null
 			}
-			return this.notes.find((note) => note.id === this.currentNoteId)
+			return this.newsletters.find((newsletter) => newsletter.id === this.currentNewsLetterId)
 		},
 
 		/**
-		 * Returns true if a note is selected and its title is not empty
-		 * @returns {Boolean}
+		 * Returns true if a newsletter is selected and its title is not empty
+		 *
+		 * @return {boolean}
 		 */
 		savePossible() {
-			return this.currentNote && this.currentNote.title !== ''
+			return this.currentNewsLetter && this.currentNewsLetter.title !== ''
 		},
 	},
 	/**
-	 * Fetch list of notes when the component is loaded
+	 * Fetch list of newsletters when the component is loaded
 	 */
 	async mounted() {
 		try {
-			const response = await axios.get(generateUrl('/apps/newsletterbuilder/notes'))
-			this.notes = response.data
+			await this.$store.dispatch('svrNewsletters')
 		} catch (e) {
 			console.error(e)
-			showError(t('notestutorial', 'Could not fetch notes'))
+			showError(t('newsletterstutorial', 'Could not fetch newsletters'))
 		}
 		this.loading = false
 	},
 
 	methods: {
 		/**
-		 * Create a new note and focus the note content field automatically
-		 * @param {Object} note Note object
+		 * Create a new newsletter and focus the newsletter content field automatically
+		 *
+		 * @param {object} newsletter NewsLetter object
 		 */
-		openNote(note) {
+		openNewsLetter(newsletter) {
 			if (this.updating) {
 				return
 			}
-			this.currentNoteId = note.id
+			this.currentNewsLetterId = newsletter.id
 			this.$nextTick(() => {
 				this.$refs.content.focus()
 			})
 		},
 		/**
 		 * Action tiggered when clicking the save button
-		 * create a new note or save
+		 * create a new newsletter or save
 		 */
-		saveNote() {
-			if (this.currentNoteId === -1) {
-				this.createNote(this.currentNote)
+		saveNewsLetter() {
+			if (this.currentNewsLetterId === -1) {
+				// this.createNewsLetter(this.currentNewsLetter)
 			} else {
-				this.updateNote(this.currentNote)
+				// this.updateNewsLetter(this.currentNewsLetter)
 			}
 		},
 		/**
-		 * Create a new note and focus the note content field automatically
-		 * The note is not yet saved, therefore an id of -1 is used until it
+		 * Create a new newsletter and focus the newsletter content field automatically
+		 * The newsletter is not yet saved, therefore an id of -1 is used until it
 		 * has been persisted in the backend
 		 */
-		newNote() {
-			if (this.currentNoteId !== -1) {
-				this.currentNoteId = -1
-				this.notes.push({
+		newNewsLetter() {
+			if (this.currentNewsLetterId !== -1) {
+				this.currentNewsLetterId = -1
+				this.newsletters.push({
 					id: -1,
 					title: '',
 					content: '',
@@ -163,58 +171,61 @@ export default {
 			}
 		},
 		/**
-		 * Abort creating a new note
+		 * Abort creating a new newsletter
 		 */
-		cancelNewNote() {
-			this.notes.splice(this.notes.findIndex((note) => note.id === -1), 1)
-			this.currentNoteId = null
+		cancelNewNewsLetter() {
+			this.newsletters.splice(this.newsletters.findIndex((newsletter) => newsletter.id === -1), 1)
+			this.currentNewsLetterId = null
 		},
 		/**
-		 * Create a new note by sending the information to the server
-		 * @param {Object} note Note object
+		 * Create a new newsletter by sending the information to the server
+		 *
+		 * @param {object} newsletter NewsLetter object
 		 */
-		async createNote(note) {
+		async createNewsLetter(newsletter) {
 			this.updating = true
 			try {
-				const response = await axios.post(generateUrl('/apps/newsletterbuilder/notes'), note)
-				const index = this.notes.findIndex((match) => match.id === this.currentNoteId)
-				this.$set(this.notes, index, response.data)
-				this.currentNoteId = response.data.id
+				const response = await axios.post(generateUrl('/apps/newsletterbuilder/newsletters'), newsletter)
+				const index = this.newsletters.findIndex((match) => match.id === this.currentNewsLetterId)
+				this.$set(this.newsletters, index, response.data)
+				this.currentNewsLetterId = response.data.id
 			} catch (e) {
 				console.error(e)
-				showError(t('notestutorial', 'Could not create the note'))
+				showError(t('newsletterstutorial', 'Could not create the newsletter'))
 			}
 			this.updating = false
 		},
 		/**
-		 * Update an existing note on the server
-		 * @param {Object} note Note object
+		 * Update an existing newsletter on the server
+		 *
+		 * @param {object} newsletter NewsLetter object
 		 */
-		async updateNote(note) {
+		async updateNewsLetter(newsletter) {
 			this.updating = true
 			try {
-				await axios.put(generateUrl(`/apps/newsletterbuilder/notes/${note.id}`), note)
+				await axios.put(generateUrl(`/apps/newsletterbuilder/newsletters/${newsletter.id}`), newsletter)
 			} catch (e) {
 				console.error(e)
-				showError(t('notestutorial', 'Could not update the note'))
+				showError(t('newsletterstutorial', 'Could not update the newsletter'))
 			}
 			this.updating = false
 		},
 		/**
-		 * Delete a note, remove it from the frontend and show a hint
-		 * @param {Object} note Note object
+		 * Delete a newsletter, remove it from the frontend and show a hint
+		 *
+		 * @param {object} newsletter NewsLetter object
 		 */
-		async deleteNote(note) {
+		async deleteNewsLetter(newsletter) {
 			try {
-				await axios.delete(generateUrl(`/apps/newsletterbuilder/notes/${note.id}`))
-				this.notes.splice(this.notes.indexOf(note), 1)
-				if (this.currentNoteId === note.id) {
-					this.currentNoteId = null
+				await axios.delete(generateUrl(`/apps/newsletterbuilder/newsletters/${newsletter.id}`))
+				this.newsletters.splice(this.newsletters.indexOf(newsletter), 1)
+				if (this.currentNewsLetterId === newsletter.id) {
+					this.currentNewsLetterId = null
 				}
-				showSuccess(t('newsletterbuilder', 'Note deleted'))
+				showSuccess(t('newsletterbuilder', 'NewsLetter deleted'))
 			} catch (e) {
 				console.error(e)
-				showError(t('newsletterbuilder', 'Could not delete the note'))
+				showError(t('newsletterbuilder', 'Could not delete the newsletter'))
 			}
 		},
 	},
