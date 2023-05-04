@@ -4,6 +4,8 @@
  */
 
 import { generateFilePath } from '@nextcloud/router'
+import { getRequestToken } from '@nextcloud/auth'
+import 'grapesjs/dist/css/grapes.min.css'
 
 import Vue from 'vue'
 import App from './App'
@@ -28,5 +30,6 @@ Vue.mixin({ methods: { t, n } })
 
 export default new Vue({
 	el: '#content',
+	store,
 	render: h => h(App),
 })

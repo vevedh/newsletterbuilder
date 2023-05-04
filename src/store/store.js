@@ -20,7 +20,7 @@ export default new Vuex.Store({
 	},
 	actions: {
 		async svrNewsletters({ dispatch, state, commit }) {
-			const newsletters = await newsLettersApi.getNewsletters()
+			const newsletters = await newsLettersApi.getNewsLetters()
 			commit('setNewsletters', newsletters)
 			if (state.activeFicheId === null && Array.isArray(newsletters) && newsletters.length >= 0) {
 				commit('setActiveNewsLetterId', 0)

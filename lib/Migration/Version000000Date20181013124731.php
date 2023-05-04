@@ -42,7 +42,7 @@ class Version000000Date20181013124731 extends SimpleMigrationStep {
 			]);
 
 			$table->setPrimaryKey(['id']);
-			$table->addIndex(['user_id'], 'newsletterbuilder_user_id_index');
+			$table->addIndex(['user_id'], 'nlbuilder_user_id_index');
 		}
 		return $schema;
 	}
