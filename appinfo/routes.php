@@ -18,7 +18,10 @@ return [
 	],
 	'routes' => [
 		['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
+		
 		['name' => 'newsletter_api#preflighted_cors', 'url' => '/api/0.1/{path}',
-			'verb' => 'OPTIONS', 'requirements' => ['path' => '.+']]
+			'verb' => 'OPTIONS', 'requirements' => ['path' => '.+']],
+		['name' => 'utils_api#sendEmail', 'url' => '/sendEmail', 'verb' => 'POST'],
+		
 	]
 ];

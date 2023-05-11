@@ -5,7 +5,7 @@
 
 import { generateFilePath } from '@nextcloud/router'
 import { getRequestToken } from '@nextcloud/auth'
-import 'grapesjs/dist/css/grapes.min.css'
+
 
 import Vue from 'vue'
 import App from './App'

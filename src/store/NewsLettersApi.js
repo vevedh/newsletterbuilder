@@ -84,6 +84,22 @@ export class NewsLettersApi {
 			})
 	}
 
+	sendEmail(value) {
+
+		return axios.post(this.url('/sendEmail'),{subject:value.sujet,content:value.content,mailsto:value.mailsto})
+			.then(
+				(response) => {
+					return Promise.resolve(response.data)
+				},
+				(err) => {
+					return Promise.reject(err)
+				}
+			)
+			.catch((err) => {
+				return Promise.reject(err)
+			})
+	}
+
 	searchSharees(params) {
 		return axios.get(generateOcsUrl('apps/files_sharing/api/v1/sharees'), { params })
 	}

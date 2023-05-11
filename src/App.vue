@@ -3,46 +3,71 @@
     SPDX-FileCopyrightText: Hervé de CHAVIGNY <vevedh@gmail.com>
     SPDX-License-Identifier: AGPL-3.0-or-later
     -->
-	<div id="content" class="app-newsletterbuilder">
+	<NcContent  app-name="newsletterbuilder">
 		<NcAppNavigation>
+		  	<template #list>
 			<NcAppNavigationNew v-if="!loading"
 				:text="t('newsletterbuilder', 'Nouvelle Newsletter')"
 				:disabled="false"
 				button-id="new-newsletterbuilder-button"
 				button-class="icon-add"
 				@click="newNewsLetter" />
-			<ul>
-				<NcAppNavigationItem v-for="newsletter in newsletters"
-					:key="newsletter.id"
-					:title="newsletter.title ? newsletter.title : t('newsletterbuilder', 'Nouvelle NewsLetter')"
-					:class="{active: currentNewsLetterId === newsletter.id}"
-					@click="openNewsLetter(newsletter)">
-					<template slot="actions">
-						<ActionButton v-if="newsletter.id === -1"
-							icon="icon-close"
-							@click="cancelNewNewsLetter(newsletter)">
-							{{
-								t('newsletterbuilder', 'Cancel newsletter creation') }}
-						</ActionButton>
-						<ActionButton v-else
-							icon="icon-delete"
-							@click="deleteNewsLetter(newsletter)">
-							{{
-								t('newsletterbuilder', 'Delete newsletter') }}
-						</ActionButton>
-					</template>
-				</NcAppNavigationItem>
-			</ul>
+				
+					<NcAppNavigationItem v-for="newsletter in newsletters"
+						:key="newsletter.id"
+						:title="newsletter.title ? newsletter.title : t('newsletterbuilder', 'Nouvelle NewsLetter')"
+						:class="{active: currentNewsLetterId === newsletter.id}"
+						@click="openNewsLetter(newsletter)">
+						<template slot="actions">
+							<ActionButton v-if="newsletter.id === -1"
+								icon="icon-close"
+								@click="cancelNewNewsLetter(newsletter)">
+								{{
+									t('newsletterbuilder', 'Cancel newsletter creation') }}
+							</ActionButton>
+							<ActionButton v-else
+								icon="icon-delete"
+								@click="deleteNewsLetter(newsletter)">
+								{{
+									t('newsletterbuilder', 'Delete newsletter') }}
+							</ActionButton>
+						</template>
+					</NcAppNavigationItem>
+				
+			</template>
+			
 		</NcAppNavigation>
 		<NcAppContent>
-			<div v-show="currentNewsLetter && myEditor" id="emptycontentEditor">
-				<div id="gjs"  class="gjs-editor-cont">
-				<mjml>
-					<mj-body>
-					<mj-section> </mj-section>
-					</mj-body>	
-				</mjml>
+			<!--<NcActions v-if="open"></NcActions>
+			<ul >
+			<li><NcActionButton v-if="!open" @click="toggleNavigation(open)" title="Toggle sidebar">
+					<template #icon>
+						<Plus :size="20" />
+					</template>
+				
+				</NcActionButton>
+			</li>
+			
+			</ul>
+			-->	
+			<div class="wrapper">
+					<div class="status-header">
+						<div class="location-wrapper"><h2>{{t('newsletterbuilder','Editeur de News Letters')}}</h2></div>
+						<div class="action-item">
+							<NcButton  type="primary" @click="sendMailTest()">
+								<template #icon >
+									<Check :size="20" />
+								</template>
+								{{t('newsletterbuilder','Test e-mail')}}
+							</NcButton>
+						</div>
+					</div>
 				</div>
+			
+			<div v-show="currentNewsLetter" id="emptycontentEditor">
+				
+				<div id="gjs"  class="gjs-editor-cont" />
+				
 				<!--<input ref="title"
 					v-model="currentNewsLetter.title"
 					type="text"
@@ -62,23 +87,42 @@
 				</h2>
 			</div>
 		</NcAppContent>
-	</div>
+	</NcContent>
 </template>
 
 <script>
 
-import 'grapesjs/dist/css/grapes.min.css'
+import '../css/grapes.min.css'
+import '../css/fontawesome.min.css'
+//import 'grapesjs/dist/css/grapes.min.css'
+import 'grapesjs-component-code-editor/dist/grapesjs-component-code-editor.min.css';
 import grapesJS from 'grapesjs'
 import fr from 'grapesjs/locale/fr'
 import grapesJSMJML from 'grapesjs-mjml'
+import grapesCE from 'grapesjs-component-code-editor';
 import mjmlFR from 'grapesjs-mjml/locale/fr' 
 
-
+import NcContent from '@nextcloud/vue/dist/Components/NcContent'
+import NcActions from '@nextcloud/vue/dist/Components/NcActions'
+import NcButton from '@nextcloud/vue/dist/Components/NcButton'
 import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton'
 import NcAppContent from '@nextcloud/vue/dist/Components/NcAppContent'
 import NcAppNavigation from '@nextcloud/vue/dist/Components/NcAppNavigation'
 import NcAppNavigationItem from '@nextcloud/vue/dist/Components/NcAppNavigationItem'
 import NcAppNavigationNew from '@nextcloud/vue/dist/Components/NcAppNavigationNew'
+import NcAppNavigationToggle from '@nextcloud/vue/dist/Components/NcAppNavigationToggle'
+
+import Plus from 'vue-material-design-icons/Plus'
+import FolderIcon from 'vue-material-design-icons/Folder.vue'
+import PlusIcon from 'vue-material-design-icons/Plus.vue'
+import Check from 'vue-material-design-icons/Check.vue'
+import FileImportIcon from 'vue-material-design-icons/FileImport.vue'
+import CogIcon from 'vue-material-design-icons/Cog.vue'
+import Delete from 'vue-material-design-icons/Delete.vue'
+import Magnify from 'vue-material-design-icons/Magnify.vue'
+import CodeJson from 'vue-material-design-icons/CodeJson.vue'
+
+import { emit, subscribe, unsubscribe } from '@nextcloud/event-bus'
 
 import { mapState, mapGetters, mapActions } from 'vuex'
 
@@ -97,16 +141,30 @@ import axios from '@nextcloud/axios'
 export default {
 	name: 'App',
 	components: {
+		NcButton,
+		NcContent,
+		NcActions,
 		NcActionButton,
 		NcAppContent,
 		NcAppNavigation,
 		NcAppNavigationItem,
 		NcAppNavigationNew,
+		NcAppNavigationToggle,
+		Plus,
+		Delete,
+		Check,
+		CogIcon,
+		Magnify,
+		FileImportIcon,
+		PlusIcon,
+		FolderIcon,
+		CodeJson,
 		//mjml,
 	},
 	data() {
 		return {
 			// newsletters: [],
+			open: false,
 			myEditor:null,
 			showBuilder: false,
 			currentNewsLetterId: null,
@@ -149,7 +207,7 @@ export default {
 		console.log('Window :', window)
 		console.log('Window :', this.$refs)
 		console.log('User infos :', OC.getCurrentUser())
-
+		subscribe('navigation-toggled', this.toggleNavigationByEventBus)
 			
 		try {
 			await this.$store.dispatch('svrNewsletters')
@@ -161,42 +219,79 @@ export default {
 		
 		this.loading = false
 	},
-
+	unmounted() {
+		
+		unsubscribe('toggle-navigation', this.toggleNavigationByEventBus)
+	},
 	methods: {
+		async sendMailTest() {
+			//this.myEditor.runCommand('mjml-code-to-html').html
+			await this.$store.dispatch('sendEmail',{sujet:`test de newsletter`, content:this.myEditor.runCommand('mjml-code-to-html').html, mailsto:'herve.dechavigny@cacem.fr,vevedh@gmail.com'});
+		},
+		toggleNavigation(state) {
+			console.log('Open :',state)
+
+			this.open = (typeof state === 'undefined') ? !this.open : !state
+			
+			const bodyStyles = getComputedStyle(document.body)
+			const animationLength = parseInt(bodyStyles.getPropertyValue('--animation-quick')) || 100
+
+			setTimeout(() => {
+				emit('toggle-navigation', {
+					open: this.open,
+				})
+				try {
+					this.myEditor.refresh(true)
+				} catch (e) {
+
+				}
+				
+			// We wait for 1.5 times the animation length to give the animation time to really finish.
+			}, 1.5 * animationLength)
+		},
+		toggleNavigationByEventBus({ open }) {
+			console.log('Tobbgle navigation panel :',open)
+			try {
+					this.myEditor.refresh(true)
+				} catch (e) {
+
+				}
+			
+		},
 		initEditor() {
-					this.myEditor = grapesJS.init({
-					//clearOnRender: true,
-					//height: '100%',
-					allowScripts: 1,
-					avoidInlineStyle: true,
-					storageManager: {
-						options: {
-							local: { key: 'gjsProjectMjml' }
-						}
+				this.myEditor = grapesJS.init({
+						height:'100%',
+						allowScripts: 1,
+						avoidInlineStyle: false,
+						storageManager: {
+							options: {
+								local: { key: 'gjsProjectMjml' }
+							}
+						},
+						storageManager: false,
+						//storageManager:{ autoload: 0 },
+						/*assetManager: {
+						assets: images,
+						upload: 0,
+						uploadText: 'Uploading is not available in this demo',
+						},*/
+						fromElement: true,
+						container: '#gjs',
+						i18n: {
+									// locale: 'en', // default locale
+									// detectLocale: true, // by default, the editor will detect the language
+									// localeFallback: 'en', // default fallback
+									messages: { fr: fr },
+						},
+						plugins: [grapesJSMJML , grapesCE ],//grapesJSMJML
+						pluginsOpts: {
+						[grapesJSMJML]: {
+							// Optional options
+							i18n: { fr: mjmlFR },
+							
+						},
+						[grapesCE]:{}
 					},
-					storageManager: false,
-					//storageManager:{ autoload: 0 },
-					/*assetManager: {
-					assets: images,
-					upload: 0,
-					uploadText: 'Uploading is not available in this demo',
-					},*/
-					fromElement: true,
-					container: '#gjs',
-					i18n: {
-								// locale: 'en', // default locale
-								// detectLocale: true, // by default, the editor will detect the language
-								// localeFallback: 'en', // default fallback
-								messages: { fr: fr },
-					},
-					plugins: [grapesJSMJML],
-					pluginsOpts: {
-					[grapesJSMJML]: {
-						// Optional options
-						i18n: { fr: mjmlFR },
-						
-					}
-				},
 				});
 				console.log('My editor components :',this.myEditor.Panels.getPanel('options').buttons)
 				//console.log('My editor components :',this.myEditor.Panels.getButton('options','sw-visibility').set('label','Un test'))	
@@ -308,6 +403,19 @@ export default {
 				pn.addButton('options',newBtn4)
 				pn.addButton('options',newBtn5)
 				pn.addButton('options',newBtn6)
+
+
+				const panelViews = pn.getPanel('views')
+
+				panelViews.get('buttons').add([{
+					attributes: {
+						title: 'Open Code'
+					},
+					className: 'fa fa-file-code',
+					command: 'open-code',
+					togglable: false, //do not close when button is clicked again
+					id: 'open-code'
+				}]);
 				
 				//.set('label','Un test')
 
@@ -346,10 +454,20 @@ export default {
 					
 				});
 
+				this.myEditor.on('stop:mjml-import', async () => {
+					console.log('Editor wrapper :',this.myEditor.Components.getWrapper())
+					console.log('Editor Asset Manager :',this.myEditor.AssetManager.getAll())
+					console.log('Editor content :',this.myEditor.DomComponents)
+					//).filter(o => o.id == 'mj-image')
+				})
+
 
 				this.myEditor.onReady(() => {
 					// perform actions
-					this.myEditor.Components.getWrapper().set('content', '<mjml><mj-body></mj-body></mjml>')
+					console.log('Editor wrapper :',this.myEditor)
+					
+					this.myEditor.Components.getWrapper().set('content', '')
+					this.myEditor.setComponents('<mjml><mj-body></mj-body></mjml>')
 				});
 		},
 		/**
@@ -363,12 +481,13 @@ export default {
 			}
 			this.currentNewsLetterId = newsletter.id
 			
-			this.myEditor.Components.getWrapper().set('content', '<mjml><mj-body><mj-section></mj-section></mj-body></mjml>')
-			this.myEditor.editor.html =  '<mjml><mj-body><mj-section></mj-section></mj-body></mjml>'
+			//this.myEditor.Components.getWrapper().set('content', '<mjml><mj-body><mj-section></mj-section></mj-body></mjml>')
+			//this.myEditor.editor.html =  '<mjml><mj-body><mj-section></mj-section></mj-body></mjml>'
 			console.log('My editor content :',this.myEditor)
 			console.log('My editor mjml :',this.myEditor.getHtml())
 			console.log('My editor css :',this.myEditor.getCss())
 			console.log('My html :',this.myEditor.runCommand('mjml-code-to-html').html)
+			this.myEditor.editor.view.init()
 			/*this.$nextTick(() => {
 				this.$refs.content.focus()
 			})*/
@@ -466,11 +585,292 @@ export default {
 	},
 }
 </script>
-<style scoped>
+<style scoped >
 
-	#gjs {
+
+
+#gjs >>> 
+.gjs-one-bg {
+  background-color: #444
+}
+
+#gjs >>> 
+.gjs-one-color {
+  color: #444
+}
+#gjs >>> 
+.gjs-one-color-h:hover {
+  color: #444
+}
+#gjs >>> 
+.gjs-two-bg {
+  background-color: #fff
+}
+
+#gjs >>> 
+.gjs-two-color {
+  color: #fff
+}
+
+#gjs >>> 
+.gjs-two-color-h:hover {
+  color: #fff
+}
+
+#gjs >>> 
+.gjs-three-bg {
+  background-color: #804f7b
+}
+
+#gjs >>> 
+.gjs-three-color {
+  color: #804f7b
+}
+
+#gjs >>> 
+.gjs-three-color-h:hover {
+  color: #804f7b
+}
+
+#gjs >>> 
+.gjs-four-bg {
+  background-color: #eca700
+}
+
+#gjs >>> 
+.gjs-four-color {
+  color: #eca700
+}
+
+#gjs >>> 
+.gjs-four-color-h:hover {
+  color: #eca700
+}
+
+#gjs >>> 
+.gjs-danger-bg {
+  background-color: #dd3636
+}
+
+#gjs >>> 
+.gjs-danger-color {
+  color: #dd3636
+}
+
+#gjs >>> 
+.gjs-danger-color-h:hover {
+  color: #dd3636
+}
+
+#gjs >>> 
+.gjs-bg-main,
+.gjs-sm-colorp-c,
+.gjs-off-prv {
+  background-color: #444
+}
+
+#gjs >>>
+.gjs-input:focus,
+.gjs-button:focus,
+.gjs-btn-prim:focus,
+.gjs-select:focus,
+.gjs-select select:focus {
+  outline: none
+}
+
+#gjs >>>
+.gjs-field input,
+.gjs-field select,
+.gjs-field textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  color: inherit;
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  box-sizing: border-box;
+  width: 100%;
+  position: relative;
+  padding: 5px;
+  z-index: 1
+}
+
+#gjs >>>
+.gjs-field input:focus,
+.gjs-field select:focus,
+.gjs-field textarea:focus {
+  outline: none
+}
+
+#gjs >>>
+.gjs-field input[type=number] {
+  -moz-appearance: textfield
+}
+
+#gjs >>>
+.gjs-field input[type=number]::-webkit-outer-spin-button,
+.gjs-field input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0
+}
+
+#gjs >>>
+.gjs-field-range {
+  flex: 9 1 auto
+}
+
+#gjs >>>
+.gjs-field-integer input {
+  padding-right: 30px
+}
+
+#gjs >>> 
+ .gjs-layer-title {
 		
-		z-index: 2000;
+		font-style: normal;
+		font-weight: 900;
+		padding: 0px 10px 5px 30px !important;
+		display: flex;
+		align-items: left;
+
+}
+
+#gjs >>> 
+.gjs-layer-name {
+		padding: 5px 0;
+		display: inline-block;
+		box-sizing: content-box;
+		overflow: hidden;
+		white-space: nowrap;
+		margin: 0 30px 0 5px;
+		max-width: 170px;
+		height: auto;
+}
+#gjs >>> 
+.code-panel section .codepanel-label {
+    margin-top: 5px;
+    line-height: 45px;
+    font-size: 13px;
+    color: #fdfbfb;
+    user-select: none;
+    text-transform: uppercase;
+}
+
+#gjs >>> 
+.code-panel section .codepanel-separator {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+    padding-top: 0;
+    margin-top: 20px;
+}
+
+/*	#gjs {
+		
+		
+	}
+
+	#gjs >>> .gjs-editor {
+		font-family: Helvetica,sans-serif !important;
+    	font-size: .75rem !important;
+	}
+
+	#gjs >>> .gjs-sm-property .gjs-sm-btn {
+		background-color: rgba(33,33,33,.2);
+		border-radius: 2px;
+		box-shadow: 1px 1px 0 rgba(5,5,5,.2), 1px 1px 0 rgba(43,43,43,.2) inset;
+		padding: 5px;
+		position: relative;
+		text-align: center;
+		height: auto;
+		width: 100%;
+		cursor: pointer;
+		color:  var(--color-primary-text) !important;
+		box-sizing: border-box;
+		text-shadow: -1px -1px 0 rgba(0,0,0,.2);
+		border: none;
+		opacity: .85;
+		filter: alpha(opacity=85);
+	}
+	#gjs >>> input {
+		padding: 2px !important;
+		color:  var(--color-primary-text) !important;
+	}
+	#gjs >>> .gjs-input-unit {
+		margin-left: 5px;
+    	text-align: end;
+		color:  var(--color-primary-text) !important;
+
+	}
+	#gjs >>> .gjs-field-color input {
+		padding-right: 22px;
+		box-sizing: border-box;
+		height: 20px;
+		min-height: 20px;
+	}
+	#gjs >>> .gjs-field input, .gjs-field select, .gjs-field textarea {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		color:  var(--color-primary-text) !important;
+		border: none;
+		background-color: rgba(0,0,0,0);
+		box-sizing: border-box;
+		width: 100%;
+		position: relative;
+		padding: 5px;
+		z-index: 1;
+	}
+	#gjs >>> button:not(.button-vue,[class^=vs__]) {
+		border-radius: inherit;
+	}
+	#gjs >>> gjs-btn-prim {
+		color: inherit;
+		background-color: rgba(255,255,255,.1);
+		border-radius: 2px;
+		padding: 3px 6px;
+		padding: 5px;
+		cursor: pointer;
+		border: none;
+	}
+
+	#gjs >>> button {
+		appearance: auto;
+		writing-mode: horizontal-tb !important;
+		font-style: ;
+		font-variant-ligatures: ;
+		font-variant-caps: ;
+		font-variant-numeric: ;
+		font-variant-east-asian: ;
+		font-variant-alternates: ;
+		font-weight: ;
+		font-stretch: ;
+		font-size: ;
+		font-family: ;
+		font-optical-sizing: ;
+		font-kerning: ;
+		font-feature-settings: ;
+		font-variation-settings: ;
+		text-rendering: auto;
+		letter-spacing: normal;
+		word-spacing: normal;
+		line-height: normal;
+		text-transform: none;
+		text-indent: 0px;
+		text-shadow: none;
+		display: inline-block;
+		text-align: center;
+		align-items: flex-start;
+		cursor: default;
+		box-sizing: border-box;
+		background-color: buttonface;
+		margin: 0em;
+		padding: 1px 6px;
+		border-width: 2px;
+		border-style: outset;
+		border-color: buttonborder;
+		border-image: initial;
 	}
 	#gjs >>> .gjs-mdl-content {
 	text-align: left !important;	
@@ -480,34 +880,45 @@ export default {
 	}
 
 	#gjs  >>> .gjs-pn-btn {
-		color: white !important;
+		color:  var(--color-primary-text) !important;
 	}
 
 	#gjs >>> .gjs-off-prv {
-		background-color: var(--side-menu-background-color) !important;
+		background-color: var(--color-primary) !important;
 		min-height: 30px;
     	min-width: 30px;
 	}
 
 	#gjs >>> .gjs-sector-label  {
-		color: white !important;
+		color:  var(--color-primary-text) !important;
 	}
 
 	#gjs >>> .gjs-two-color {
-		color: white !important;
+		color:  var(--color-primary-text) !important;
 	}
 
 	#gjs >>> .gjs-one-bg  {
-		background-color: var(--side-menu-background-color) !important;
+		background-color: var(--color-primary) !important;
 	}
 
 	#gjs >>>  .gjs-layer-title {
-		/*font-family: 'Font Awesome\ 5 Free';*/
+		
 		font-style: normal;
 		font-weight: 900;
-		padding: 3px 10px 18px 30px !important;
+		padding: 0px 10px 5px 30px !important;
 		display: flex;
 		align-items: left;
+
+	}
+	#gjs >>> .gjs-layer-name {
+		padding: 5px 0;
+		display: inline-block;
+		box-sizing: content-box;
+		overflow: hidden;
+		white-space: nowrap;
+		margin: 0 30px 0 5px;
+		max-width: 170px;
+		height: auto;
 	}
 
 	#gjs >>> .gjs-editor-cont {
@@ -540,7 +951,7 @@ export default {
 		left: 0;
 		right: 0;
 		bottom: 0;
-		z-index: 1002 !important;
+		
 	}
 
 	#gjs >>> .gjs-cv-canvas {
@@ -556,11 +967,28 @@ export default {
 		top: 40px;
 	}
 
+	
+
+	#gjs >>> .gjs-sm-sector  {
+		
+		color: inherit;
+	}
+
+	#gjs >>> .gjs-sm-sector-title  {
+		padding: 2px !important;
+		color:  inherit;
+	}
+
+	#gjs >>> .gjs-sm-sector .gjs-sm-field.gjs-sm-composite {
+		color:  var(--color-primary-text) !important;
+	}
+*/
 
 	#emptycontent {
+		position: relative;
 		color: var(--color-text-maxcontrast);
 		text-align: center !important;
-		margin-top: 50px !important;
+		
 		width: 100% !important;
 		height: 100% !important;
 	}
@@ -568,34 +996,123 @@ export default {
 	#emptycontentEditor {
 		/*background-color: var(--color-text-maxcontrast) !important;
 		color: var(--color-text-maxcontrast);*/
-		text-align: center;
-		margin-top: 50px !important;
+		/*text-align: center;
+		margin-top: 0px !important;*/
 		width: 100%;
 		height: 100%;
+		z-index: 1801;
+
 	}
 
 	#emptycontentEditor >>> .gjs-one-bg {
-		background-color: var(--color-text-maxcontrast) !important;
+		background-color: var(--color-primary-default) !important;
 	}
 
-	#app-navigation-vue {
+	/*#app-navigation-vue {
 		z-index:1001 !important;
-	}
-	/*#app-content > div {
-		width: 100%;
-		height: 100%;
-		padding: 20px;
-		display: flex;
-		flex-direction: column;
-		flex-grow: 1;
 	}*/
+	/*.app-content  {
+	    position: initial;
+    z-index: 1009;
+    flex-basis: 100vw;
+    height: 100%;
+    margin: 0 !important;
+    background-color: var(--color-main-background);
+    min-width: 0;
+    --topbar-margin: 4px;
+	}*/
+	.wrapper {
+		/* 44px is the height of nextcloud/vue button (not exposed as a variable :[ ) */
+		--nc-button-size: 44px;
 
-	input[type='text'] {
+		--vertical-padding: 4px;
+
+		/* Sticky is better than fixed because fixed takes the element out of flow,
+		which breaks the height, putting elements underneath */
+		position: sticky;
+
+		/* This is competing with the recipe instructions which have z-index: 1 */
+		z-index: 1802;
+
+		/* The height of the nextcloud header */
+		top: 0px;
+		display: flex;
+		width: 100%;
+		/* Make sure the wrapper is always at least as tall as the tallest element
+		* we expect (primary button) to prevent flickering when loading, etc. */
+		min-height: calc(44px + 2 * var(--vertical-padding));
+		flex-direction: row;
+
+		padding: var(--vertical-padding) 1rem var(--vertical-padding)
+			calc(44px + 2 * var(--vertical-padding));
+		border-bottom: 1px solid var(--color-border);
+		background-color: var(--color-main-background);
+		gap: 8px;
+	}
+
+	.status-header {
+		display: flex;
+		/* Allow the title to shrink*/
+		min-width: 0;
+		flex-basis: 0;
+		flex-direction: row;
+		flex-grow: 1;
+		flex-shrink: 1;
+		align-items: flex-start;
+		justify-content: space-around;
+	}
+
+	.mode-indicator {
+		font-size: 0.9em;
+		line-height: 0.9em;
+	}
+
+	.location-wrapper {
+		width: 100%;
+		padding-top: 5px;
+	}
+
+	.location-wrapper:only-child {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	
+	.action-item {
+		padding-left: 20px;
+		display: flex;
+		margin-left: auto;
+		gap: 5px;
+		flex-wrap: wrap;
+	}
+
+
+	/* The .status-header is justify-content: space-around. If there is no
+	* .mode-indicator, this will put the .location at the top. Override to place in
+	* the center */
+	.status-header:deep(.location) {
+		/* Don't let the location go wider than the space available */
+		width: 100%;
+		margin: 0;
+		font-size: 1.2em;
+		line-height: 1em;
+		/* overflow-x: hidden breaks overflow-y: visible
+		https://stackoverflow.com/questions/6421966/css-overflow-x-visible-and-overflow-y-hidden-causing-scrollbar-issue */
+		overflow-x: clip;
+		overflow-y: visible;
+		/* Show ... when overflowing */
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/*input[type='text'] {
 		width: 100%;
 	}
 
 	textarea {
 		flex-grow: 1;
 		width: 100%;
-	}
+	}*/
 </style>

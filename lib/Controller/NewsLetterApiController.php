@@ -10,8 +10,10 @@ use OCA\NewsLetterBuilder\Service\NewsLetterService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\Mail\IMailer;
 
 class NewsLetterApiController extends ApiController {
+	private IMailer $mailer;
 	private NewsLetterService $service;
 	private ?string $userId;
 
@@ -19,10 +21,12 @@ class NewsLetterApiController extends ApiController {
 
 	public function __construct(IRequest $request,
 								NewsLetterService $service,
+								IMailer $mailer,
 								?string $userId) {
 		parent::__construct(Application::APP_ID, $request);
 		$this->service = $service;
 		$this->userId = $userId;
+		$this->mailer = $mailer;
 	}
 
 	/**
@@ -77,4 +81,20 @@ class NewsLetterApiController extends ApiController {
 			return $this->service->delete($id, $this->userId);
 		});
 	}
+
+
+	 /**
+	 * @NoAdminRequired
+	 */
+	public function sendEmail(string $subject,string $content , string $mailsto) {
+
+  	
+		$message =  $this->mailer->createMessage();
+		$message->setSubject($subject);
+		$message->setFrom(array('notification@cacem.fr' => 'Fiche Navette Notifier'));
+		$message->setTo(explode(',',$mailsto)); //array('herve.dechavigny@cacem.fr','sebastien.kneur@cacem.fr')
+		$message->setBody('test', 'text/html');//$content
+		$this->mailer->send($message);
+  
+	  }
 }

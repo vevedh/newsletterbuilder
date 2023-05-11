@@ -26,6 +26,9 @@ export default new Vuex.Store({
 				commit('setActiveNewsLetterId', 0)
 			}
 		},
+		async sendEmail({commit,state},params) {
+			await newsLettersApi.sendEmail(params)
+		},
 	},
 	getters: {
 		getNewsletters: state => (state.newsletters) ? state.newsletters : [],
