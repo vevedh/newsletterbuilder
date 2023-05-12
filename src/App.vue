@@ -455,10 +455,28 @@ export default {
 				});
 
 				this.myEditor.on('stop:mjml-import', async () => {
-					console.log('Editor wrapper :',this.myEditor.Components.getWrapper())
+					/*console.log('Editor wrapper :',this.myEditor.Components.getWrapper())
 					console.log('Editor Asset Manager :',this.myEditor.AssetManager.getAll())
-					console.log('Editor content :',this.myEditor.DomComponents)
+					//console.log('Editor images :',this.myEditor.Components.getComponent('mjml').find({ type:'mj-image' }))
+					console.log('Editor content :',this.myEditor.Components.getComponent('mjml').findType('mj-image'))
+					const allImages = await this.myEditor.Components.getComponent('mjml').findType('mj-image')
+					//this.myEditor.Components.getComponent('mjml').findType('mj-image')[0].setAttributes('src','http://localhost:8080/')
+					//.getTypes().filter(o => o.id == 'mjml'))
 					//).filter(o => o.id == 'mj-image')
+					console.log('All images :',allImages)
+					if (Array.isArray(allImages) && allImages.length>0 ) {
+						console.log('Component 0 :',allImages[0])
+						console.log('Change settings...',this.myEditor.DomComponents.componentsById[allImages[0].ccid].get('attributes'))
+						console.log('Change settings url',this.myEditor.DomComponents.componentsById[allImages[0].ccid].get('attributes').src)
+						const reader = new FileReader()
+						reader.onload = async function() {
+							this.myEditor.DomComponents.componentsById[allImages[0].ccid].set({ src:reader.result })
+						}
+						reader.readAsArrayBuffer(this.myEditor.DomComponents.componentsById[allImages[0].ccid].get('attributes').src)
+						
+						//this.myEditor.DomComponents.componentsById[allImages[0].ccid].set({ src:'http://localhost:8080/'})
+						console.log('Component 0 :',allImages[0].view.el)
+					}*/
 				})
 
 
