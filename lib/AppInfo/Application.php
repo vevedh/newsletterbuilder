@@ -25,7 +25,8 @@ class Application extends App implements IBootstrap {
 	public function boot(IBootContext $context): void {
 		//Util::addStyle(self::APP_ID, 'grapes.min');
 		//Util::addStyle(self::APP_ID, 'fontawesome.min');
-		//Util::addScript(self::APP_ID, 'fontawesome.min');
+		Util::addScript(self::APP_ID, 'newsletterbuilder-ckeditor');
+		Util::addScript(self::APP_ID, 'newsletterbuilder-pluginCkeditor');
 	}
 
 }

@@ -20,6 +20,7 @@ Vue.prototype.$window = window
 Vue.prototype.OC = OC
 Vue.prototype.OCA = OCA
 Vue.prototype.OCP = OCP
+Vue.prototype.CKEDITOR = window.CKEDITOR
 
 // eslint-disable-next-line
 __webpack_public_path__ = generateFilePath(appName, '', 'js/')

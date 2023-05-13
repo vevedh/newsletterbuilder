@@ -53,7 +53,14 @@
 			<div class="wrapper">
 					<div class="status-header">
 						<div class="location-wrapper"><h2>{{t('newsletterbuilder','Editeur de News Letters')}}</h2></div>
+						<div class="action-wrapper" v-if="currentNewsLetter">
+							<h2>Titre :</h2> <input  v-model="currentNewsLetter.title"/>
+						</div>
+						<div class="action-item" v-if="currentNewsLetter">
+							
+						</div>
 						<div class="action-item">
+							
 							<NcButton  type="primary" @click="sendMailTest()">
 								<template #icon >
 									<Check :size="20" />
@@ -100,6 +107,7 @@ import grapesJS from 'grapesjs'
 import fr from 'grapesjs/locale/fr'
 import grapesJSMJML from 'grapesjs-mjml'
 import grapesCE from 'grapesjs-component-code-editor';
+import grapesCK from 'grapesjs-plugin-ckeditor';
 import mjmlFR from 'grapesjs-mjml/locale/fr' 
 
 import NcContent from '@nextcloud/vue/dist/Components/NcContent'
@@ -226,6 +234,9 @@ export default {
 	methods: {
 		async sendMailTest() {
 			//this.myEditor.runCommand('mjml-code-to-html').html
+			this.currentNewsLetter.content = this.myEditor.getHtml()
+			//this.myEditor.runCommand('mjml-code-to-html').html
+			this.saveNewsLetter()
 			await this.$store.dispatch('sendEmail',{sujet:`test de newsletter`, content:this.myEditor.runCommand('mjml-code-to-html').html, mailsto:'herve.dechavigny@cacem.fr,vevedh@gmail.com'});
 		},
 		toggleNavigation(state) {
@@ -259,6 +270,7 @@ export default {
 			
 		},
 		initEditor() {
+				CKEDITOR.dtd.$editable.a = 1;
 				this.myEditor = grapesJS.init({
 						height:'100%',
 						allowScripts: 1,
@@ -290,6 +302,23 @@ export default {
 							i18n: { fr: mjmlFR },
 							
 						},
+						/*[grapesCK]: {
+							position: 'center',
+							options: {
+								startupFocus: true,
+								extraAllowedContent: '*(*);*{*}', // Allows any class and any inline style
+								allowedContent: true, // Disable auto-formatting, class removing, etc.
+								enterMode: 1,
+								extraPlugins: 'sharedspace,justify,colorbutton,panelbutton,font',
+								toolbar: [
+									{ name: 'styles', items: ['Font', 'FontSize' ] },
+									['Bold', 'Italic', 'Underline', 'Strike'],
+									{name: 'paragraph', items : [ 'NumberedList', 'BulletedList']},
+									{name: 'links', items: ['Link', 'Unlink']},
+									{name: 'colors', items: [ 'TextColor', 'BGColor' ]},
+								],
+							}
+						},*/
 						[grapesCE]:{}
 					},
 				});
@@ -297,7 +326,7 @@ export default {
 				//console.log('My editor components :',this.myEditor.Panels.getButton('options','sw-visibility').set('label','Un test'))	
 				const buttonsOrig = Object.assign([],this.myEditor.Panels.getPanel('options').buttons.models)
 				const pn = this.myEditor.Panels
-				/***********************************************/
+				/**********************************************
 				console.log('Button 1 :',buttonsOrig[1])
 				const btn1 = buttonsOrig[1]
 				const btnPreview = {
@@ -309,8 +338,8 @@ export default {
 					label: `<svg style="display: block; max-width:22px" viewBox="0 0 24 24"><path fill="currentColor" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"></path></svg>`,
 					attributes: { title:btn1.attributes?.attributes?.title }
 				}
-				console.log('Button Preview :',btnPreview)
-				/***************************************************/
+				console.log('Button Preview :',btnPreview)*/
+				/**************************************************
 				console.log('Button 2 :',buttonsOrig[2])
 				const btn2 = buttonsOrig[2]
 				const btnFullScreen = {
@@ -324,8 +353,8 @@ export default {
 				</svg>`,
 					attributes: { title:btn2.attributes?.attributes?.title }
 				}
-				console.log('Button FullScreen :',btnFullScreen)
-				/************************************************/
+				console.log('Button FullScreen :',btnFullScreen)*/
+				/***********************************************
 				console.log('Button 3 :',buttonsOrig[3])
 				const btn3 = buttonsOrig[3]
 				const btnCode = {
@@ -339,8 +368,8 @@ export default {
 					</svg>`,
 					attributes: { title:btn3.attributes?.attributes?.title }
 				}
-				console.log('Button Preview :',btnCode)
-				/******************************************/
+				console.log('Button Preview :',btnCode)*/
+				/*****************************************
 				console.log('Button 4 :',buttonsOrig[4])
 				const btn4 = buttonsOrig[4]
 				const newBtn4 = {
@@ -351,8 +380,8 @@ export default {
 					context: btn4.attributes?.context,
 					label: btn4.attributes?.label,
 					attributes: { title:btn4.attributes?.title }
-				}
-				/**************************************************/
+				}*/
+				/*************************************************
 				console.log('Button 5 :',buttonsOrig[5])
 				const btn5 = buttonsOrig[5]
 				const newBtn5 = {
@@ -364,8 +393,8 @@ export default {
 					label: btn5.attributes?.label,
 					attributes: { title:btn5.attributes?.attributes?.title }
 				}
-				console.log('Button 5 :',newBtn5)
-				/***********************************/
+				console.log('Button 5 :',newBtn5)*/
+				/**********************************
 				console.log('Button 6 :',buttonsOrig[6])
 				const btn6 = buttonsOrig[6]
 				const newBtn6 = {
@@ -403,7 +432,7 @@ export default {
 				pn.addButton('options',newBtn4)
 				pn.addButton('options',newBtn5)
 				pn.addButton('options',newBtn6)
-
+*/
 
 				const panelViews = pn.getPanel('views')
 
@@ -419,7 +448,7 @@ export default {
 				
 				//.set('label','Un test')
 
-				this.myEditor.on('run:preview', () => { 
+				/*this.myEditor.on('run:preview', () => { 
 					//const self = this
 					//console.log('Canvas :',self.myEditor.Components.getComponents())
 					const modalContent = this.myEditor.editor;
@@ -452,8 +481,11 @@ export default {
 					//modalContent.view.el.childNodes[3].append(spanElt)
 					
 					
-				});
+				});*/
 
+				this.myEditor.on('style:sector:add', (sector) => { 
+					console.log('Sector :',sector)
+				 });
 				this.myEditor.on('stop:mjml-import', async () => {
 					/*console.log('Editor wrapper :',this.myEditor.Components.getWrapper())
 					console.log('Editor Asset Manager :',this.myEditor.AssetManager.getAll())
@@ -479,14 +511,35 @@ export default {
 					}*/
 				})
 
+				this.myEditor.on('change:style',this.handleStyleChange)
+				this.myEditor.on('change:attributes',this.handleAttributeChange)
+
 
 				this.myEditor.onReady(() => {
 					// perform actions
 					console.log('Editor wrapper :',this.myEditor)
+					const p = this.myEditor.Panels.getPanel( 'views-container' );
+					p.set( 'resizable', true );
+
+					//this.myEditor.Panels.render();
 					
-					this.myEditor.Components.getWrapper().set('content', '')
-					this.myEditor.setComponents('<mjml><mj-body></mj-body></mjml>')
+					
 				});
+		},
+		handleAttributeChange(m, v, opts) {
+			console.log('Component attribute  m :',m)
+			console.log('Component attribute v :',v)
+			console.log('Component attribute opts :',opts)
+			//this.myEditor.setStyle(this.get('attributes'), opts);
+		},
+
+		handleStyleChange(m, v, opts) {
+			console.log('Component style  m :',m)
+			console.log('Component style v :',v)
+			console.log('Component style opts :',opts)
+			/*const style = this.getStyle();
+			delete style.__p;
+			this.myEditor.set('attributes', style, opts);*/
 		},
 		/**
 		 * Create a new newsletter and focus the newsletter content field automatically
@@ -498,14 +551,18 @@ export default {
 				return
 			}
 			this.currentNewsLetterId = newsletter.id
-			
+			if (!this.myEditor) {
+				this.initEditor()
+			}
 			//this.myEditor.Components.getWrapper().set('content', '<mjml><mj-body><mj-section></mj-section></mj-body></mjml>')
 			//this.myEditor.editor.html =  '<mjml><mj-body><mj-section></mj-section></mj-body></mjml>'
-			console.log('My editor content :',this.myEditor)
+			console.log('My editor content :',this.myEditor.editor)
 			console.log('My editor mjml :',this.myEditor.getHtml())
 			console.log('My editor css :',this.myEditor.getCss())
-			console.log('My html :',this.myEditor.runCommand('mjml-code-to-html').html)
-			this.myEditor.editor.view.init()
+			//console.log('My html :',this.myEditor.runCommand('mjml-code-to-html').html)
+			this.myEditor.Components.getWrapper().set('content', '')
+			//this.myEditor.editor.html = newsletter.content;
+			this.myEditor.setComponents((String(newsletter.content).trim()==='')?'<mjml><mj-body></mj-body></mjml>':newsletter.content)
 			/*this.$nextTick(() => {
 				this.$refs.content.focus()
 			})*/
@@ -516,9 +573,9 @@ export default {
 		 */
 		saveNewsLetter() {
 			if (this.currentNewsLetterId === -1) {
-				// this.createNewsLetter(this.currentNewsLetter)
+				 this.createNewsLetter(this.currentNewsLetter)
 			} else {
-				// this.updateNewsLetter(this.currentNewsLetter)
+				 this.updateNewsLetter(this.currentNewsLetter)
 			}
 		},
 		/**
@@ -535,7 +592,14 @@ export default {
 					content: '',
 				})
 				//this.showBuilder = true;
-				this.initEditor()
+				if (!this.myEditor) {
+					this.initEditor()
+					this.myEditor.Components.getWrapper().set('content', '')
+					this.myEditor.setComponents('<mjml><mj-body></mj-body></mjml>')
+				} else {
+					this.myEditor.Components.getWrapper().set('content', '')
+					this.myEditor.setComponents('<mjml><mj-body></mj-body></mjml>')
+				}
 				
 				/*this.$nextTick(() => {
 					this.$refs.title.focus()
@@ -739,7 +803,7 @@ export default {
 
 #gjs >>>
 .gjs-field-integer input {
-  padding-right: 30px
+  padding-right: 20px
 }
 
 #gjs >>> 
@@ -782,6 +846,56 @@ export default {
     padding-right: 0.6rem;
     padding-top: 0;
     margin-top: 20px;
+}
+
+#gjs >>> .gjs-off-prv {
+	background-color: var(--color-primary-default);
+		border: none;
+    font-size: 18px;
+    margin-right: 5px;
+    border-radius: 2px;
+		min-height: 30px;
+    	min-width: 30px;
+		padding: 4px;
+}
+
+#gjs >>> .gjs-pn-views-container {
+  height: 100%;
+  padding: 2px 0 0;
+  right: 0;
+  width: 25% !important;
+  overflow: auto;
+  box-shadow: 0 0 5px rgba(0, 0, 0, .2)
+}
+
+#gjs >>> .gjs-layer-vis {
+    left: 0;
+    top: 0;
+    padding: 5px 10px 0px 5px;
+    position: absolute;
+    box-sizing: content-box;
+    cursor: pointer;
+    width: 12px;
+    z-index: 1;
+}
+
+#gjs >>> .gjs-sm-clear {
+    cursor: pointer;
+    width: 14px;
+    min-width: 14px;
+    height: 14px;
+    margin-left: 5px;
+    margin-bottom: inherit;
+}
+
+#gjs >>> .gjs-sm-properties {
+  font-size: .75rem;
+  padding: 5px 5px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  box-sizing: border-box;
+  width: 100%
 }
 
 /*	#gjs {
@@ -1090,20 +1204,27 @@ export default {
 		padding-top: 5px;
 	}
 
+	.action-wrapper {
+		display:flex;
+		flex:1;
+	
+	}
+
 	.location-wrapper:only-child {
 		display: flex;
 		flex: 1;
-		flex-direction: column;
+		flex-direction: row;
 		justify-content: center;
 	}
 
 	
 	.action-item {
-		padding-left: 20px;
+		padding-left: 5px;
 		display: flex;
-		margin-left: auto;
+		margin-left: 0px;
 		gap: 5px;
-		flex-wrap: wrap;
+		flex: 1;
+		flex-direction: row;
 	}
 
 

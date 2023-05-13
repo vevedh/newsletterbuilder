@@ -29,6 +29,16 @@ class PageController extends Controller {
 		$response->addHeader('X-Frame-Options', 'ALLOW');
 		$policy = new ContentSecurityPolicy();
 		$policy->addAllowedImageDomain('http:');
+		//$policy->addAllowedScriptDomain('script-src');
+		$policy->addAllowedScriptDomain('\'self\'');
+		$policy->addAllowedScriptDomain('\'unsafe-eval\'');
+		$policy->addAllowedScriptDomain('\'unsafe-inline\'');
+		$policy->addAllowedScriptDomain('https://unpkg.com');
+		$policy->addAllowedScriptDomain('https://cdnjs.cloudflare.com');
+		$policy->addAllowedStyleDomain('https://unpkg.com');
+		$policy->addAllowedStyleDomain('https://cdnjs.cloudflare.com');
+		$policy->addAllowedFontDomain('https://cdnjs.cloudflare.com');
+		$policy->addAllowedFontDomain('https://cdn.jsdelivr.net');
 		$policy->addAllowedFrameAncestorDomain('*');
 		$policy->addAllowedWorkerSrcDomain('*');
 		$policy->addAllowedFrameDomain('*');
